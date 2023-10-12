@@ -3,8 +3,8 @@
 -- number is equal to 0.
 
 DROP FUNCTION IF EXISTS SafeDiv;
-DELIMITER /
-CREATE FUNCTION SafeDiv (a INT, b INT)
+DELIMITER //
+CREATE FUNCTION SafeDiv(a INT, b INT)
 RETURNS FLOAT DETERMINISTIC
 BEGIN
     IF (b = 0)
@@ -13,5 +13,5 @@ BEGIN
     ELSE
         RETURN (a / b);
     END IF;
-END/
+END//
 DELIMITER ;
