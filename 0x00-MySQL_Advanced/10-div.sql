@@ -4,14 +4,14 @@
 
 DROP FUNCTION IF EXISTS SafeDiv;
 DELIMITER /
-CREATE FUNCTION SafeDiv (num0 INT, num1 INT)
+CREATE FUNCTION SafeDiv (a INT, b INT)
 RETURNS FLOAT DETERMINISTIC
 BEGIN
-    IF (num1 = 0)
+    IF (b = 0)
     THEN
         RETURN 0
     ELSE
-        RETURN (num0 / num1)
+        RETURN (a / b)
     END IF;
 END/
 DELIMITER ;
