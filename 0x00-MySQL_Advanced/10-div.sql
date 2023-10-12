@@ -7,7 +7,7 @@ DELIMITER /
 CREATE FUNCTION SafeDiv (num0 INT, num1 INT)
 RETURNS FLOAT DETERMINISTIC
 BEGIN
-    IF (b = 0)
+    IF (num1 = 0)
     THEN
         RETURN 0
     ELSE
