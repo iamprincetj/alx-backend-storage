@@ -49,7 +49,7 @@ class Cache:
     @call_history
     def store(self, data: any) -> str:
         '''method that takes a data argument and returns a string.'''
-        id = uuid.uuid1()
+        id = uuid.uuid4()
         self._redis.set(str(id), data)
         return str(id)
 
