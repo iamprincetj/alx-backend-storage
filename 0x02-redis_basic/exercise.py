@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
-'''A Module that contains a class that stores an instance of Redis'''
-import uuid
+
 from typing import Callable, Optional, Union
+from uuid import uuid4
 import redis
 from functools import wraps
+
+'''
+    Writing strings to Redis.
+'''
+
 
 def count_calls(method: Callable) -> Callable:
     '''
@@ -16,9 +21,10 @@ def count_calls(method: Callable) -> Callable:
             Wrapper function.
         '''
         key = method.__qualname__
-        self._redis.incrby(key, 1)
+        self._redis.incr(key)
         return method(self, *args, **kwargs)
     return wrapper
+
 
 def call_history(method: Callable) -> Callable:
     """ Decorator to store the history of inputs and
@@ -38,20 +44,47 @@ def call_history(method: Callable) -> Callable:
 
     return wrapper
 
+
+def replay(method: Callable) -> None:
+    # sourcery skip: use-fstring-for-concatenation, use-fstring-for-formatting
+    """
+    Replays the history of a function
+    Args:
+        method: The function to be decorated
+    Returns:
+        None
+    """
+    name = method.__qualname__
+    cache = redis.Redis()
+    calls = cache.get(name).decode("utf-8")
+    print("{} was called {} times:".format(name, calls))
+    inputs = cache.lrange(name + ":inputs", 0, -1)
+    outputs = cache.lrange(name + ":outputs", 0, -1)
+    for i, o in zip(inputs, outputs):
+        print("{}(*{}) -> {}".format(name, i.decode('utf-8'),
+                                     o.decode('utf-8')))
+
+
 class Cache:
-    '''A class that stores a redis instance'''
-    def __init__(self) -> None:
-        '''initialise class Cache'''
+    '''
+        Cache class.
+    '''
+    def __init__(self):
+        '''
+            Initialize the cache.
+        '''
         self._redis = redis.Redis()
         self._redis.flushdb()
 
     @count_calls
     @call_history
-    def store(self, data: any) -> str:
-        '''method that takes a data argument and returns a string.'''
-        id = uuid.uuid4()
-        self._redis.set(str(id), data)
-        return str(id)
+    def store(self, data: Union[str, bytes, int, float]) -> str:
+        '''
+            Store data in the cache.
+        '''
+        randomKey = str(uuid4())
+        self._redis.set(randomKey, data)
+        return randomKey
 
     def get(self, key: str,
             fn: Optional[Callable] = None) -> Union[str, bytes, int, float]:
@@ -80,4 +113,3 @@ class Cache:
         except Exception:
             value = 0
         return value
-
